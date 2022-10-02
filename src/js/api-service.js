@@ -29,12 +29,20 @@ class ImageApiService {
     async fetchImages() {
 
         const options = {
-            params: {KEY, q: this.queryInput, image_type, orientation, safesearch, page: this.page, per_page: 40,}
+            params: {
+                KEY, 
+                q: this.queryInput, 
+                image_type, 
+                orientation, 
+                safesearch, 
+                page: this.page, 
+                per_page: 40,
+            }
         }
     
         try {
             const response = await axios.get (BASE_URL, options);
-                this.incrementPage();
+                this.incrementePage();
                 return response.data;
             }
             catch (error) {
@@ -43,7 +51,7 @@ class ImageApiService {
             }
         }
 
-        incrementPage() {
+        incrementePage() {
             this.page += 1;
         }
         
@@ -67,6 +75,7 @@ const Pixabay = new ImageApiService();
 function onSearchFormClick(event) {
     event.preventDefault();
     isShown = 0;
+
     gallery.innerHTML = '';
 
     // Pixabay.searchQuery = event.currentTarget.elements.queryInput.value.trim();
@@ -81,8 +90,8 @@ function onSearchFormClick(event) {
 
 
 function onBtnLoadMoreClick() {
-    Pixabay.incrementPage();
-    fetchImage()
+    Pixabay.incrementePage();
+    fetchImage();
     }
 
 async function fetchImage() {
@@ -96,8 +105,9 @@ async function fetchImage() {
     renderGallery(hits);
 
     isShown += hits.length;
+
     if (isShown < totalHits) {
-        refs.loadMoreBtn.classList.remove('is-hidden');
+        loadMoreBtn.classList.remove('is-hidden');
     }
 
     if (isShown >= totalHits) {
@@ -110,28 +120,28 @@ function renderGallery(hits) {
     .map(({ webformatURL, largeImageURL, tags, likes, views, comments, downloads }) => {
         return `
         <div class="photo-card">
-            <a class="photo-card__thumb" href={{largeImageURL}}>
+            <a class="photo-card__thumb" href=${largeImageURL}>
                 <img class="photo-card__img' 
-                    src="{{webformatURL}}" 
-                    alt="{{tags }}" 
+                    src="${webformatURL}" 
+                    alt="${tags}" 
                     loading="lazy"
                 />
             </a>
             <div class="info">
                 <p class="info-item">
-                    <b>Likes:<br>{{likes}}</b>
+                    <b>Likes:<br>${likes}</b>
                 </p>
                 <p class="info-item">
-                    <b>Views:<br>{{views}}</b>
+                    <b>Views:<br>${views}</b>
                 </p>
                 <p class="info-item">
-                    <b>Comments:<br>{{comments}}</b>
+                    <b>Comments:<br>${comments}}/b>
                 </p>
                 <p class="info-item">
-                    <b>Downloads:<br>{{downloads}}</b>
+                    <b>Downloads:<br>${downloads}</b>
                 </p>
             </div>
-        </div>`;
+        </div>`
        }
     )
     .join('');
