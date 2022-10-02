@@ -3,51 +3,48 @@ import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
 import axios from 'axios';
 
-const BASE_URL = 'https://pixabay.com/api/';
-const KEY = '30297842-30e01d12e48588937048bb7ce';
-const image_type = 'photo';
-const orientation = 'horizontal';
-const safesearch = 'true';
-
 const form = document.querySelector('.search-form');
 const gallery = document.querySelector('.gallery');
 const loadMoreBtn = document.querySelector('.load-more');
 
-
 form.addEventListener('submit', onSearchFormClick)
 loadMoreBtn.addEventListener('click', onBtnLoadMoreClick)
 
+const BASE_URL = 'https://pixabay.com/api/';
+const key = '30297842-30e01d12e48588937048bb7ce';
+const image_type = 'photo';
+const orientation = 'horizontal';
+const safesearch = 'true';
+
 let isShown = 0;
 
+class NewPixabay {
+    constructor () {
+        this.searchQuery = '';
+        this.page = 1;
+    }
 
-class ImageApiService {
-    constructor() {
-    this.queryInput = '';
-    this.page = 1;
-}
-
-    async fetchImages() {
-
+    async fetchImage() {
         const options = {
             params: {
-                KEY, 
-                q: this.queryInput, 
-                image_type, 
-                orientation, 
-                safesearch, 
-                page: this.page, 
+                key,
+                q: this.searchQuery,
+                image_type,
+                orientation,
+                safesearch,
+                page: this.page,
                 per_page: 40,
             }
         }
     
         try {
-            const response = await axios.get (BASE_URL, options);
+            const response = await axios.get(BASE_URL, options);
                 this.incrementePage();
                 return response.data;
             }
             catch (error) {
                 console.error(error);
-                console.log(error.response.status);
+                console.log(error.response.data);
             }
         }
 
@@ -59,18 +56,16 @@ class ImageApiService {
             this.page = 1;
         }
 
-        get searchQuery() {
-            return this.queryInput;
+        get query() {
+            return this.searchQuery;
         }
 
-        set searchQuery(newSearchQuery) {
-            this.queryInput = newSearchQuery;
+        set query(newSearchQuery) {
+            this.searchQuery = newSearchQuery;
         }    
-
     }
 
-
-const Pixabay = new ImageApiService();
+const Pixabay = new NewPixabay();
 
 function onSearchFormClick(event) {
     event.preventDefault();
@@ -78,10 +73,10 @@ function onSearchFormClick(event) {
 
     gallery.innerHTML = '';
 
-    // Pixabay.searchQuery = event.currentTarget.elements.queryInput.value.trim();
+    Pixabay.query = event.currentTarget.elements.searchQuery.value.trim();
     Pixabay.resetPage();
 
-    if (!Pixabay.searchQuery) {
+    if (!Pixabay.query) {
         return Notify.failure("Sorry, there are no images matching your search query. Please try again.");
     }
 
@@ -119,14 +114,15 @@ function renderGallery(hits) {
     const galeryCard = hits
     .map(({ webformatURL, largeImageURL, tags, likes, views, comments, downloads }) => {
         return `
+        <a class="photo-card__thumb" href=${largeImageURL}>
         <div class="photo-card">
-            <a class="photo-card__thumb" href=${largeImageURL}>
-                <img class="photo-card__img' 
+        
+                    <img class="photo-card__img' 
                     src="${webformatURL}" 
                     alt="${tags}" 
                     loading="lazy"
                 />
-            </a>
+          
             <div class="info">
                 <p class="info-item">
                     <b>Likes:<br>${likes}</b>
@@ -135,13 +131,14 @@ function renderGallery(hits) {
                     <b>Views:<br>${views}</b>
                 </p>
                 <p class="info-item">
-                    <b>Comments:<br>${comments}}/b>
+                    <b>Comments:<br>${comments}</b>
                 </p>
                 <p class="info-item">
                     <b>Downloads:<br>${downloads}</b>
                 </p>
             </div>
-        </div>`
+        </div>
+        </a>`
        }
     )
     .join('');
